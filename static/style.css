@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+    --bg-lacivert: #1d275f;
+    --bg-dis: #101530; 
+    --krem: #f3f3e4;
+    --krem-golge: #b8b6ad; 
+    --siyah: #000000;
+    --yari-saydam: rgba(243, 243, 228, 0.3);
+    --yesil-basari: #2ecc71;
+    --kirmizi-hata: #e74c3c;
+}
+
+body {
+    font-family: 'Inter', 'Myriad Pro', 'Segoe UI', sans-serif;
+    background-color: var(--bg-dis);
+    margin: 0; padding: 0;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    color: var(--krem);
+}
+
+.app-container {
+    background-color: var(--bg-lacivert);
+    width: 100%; 
+    max-width: 500px;
+    min-height: 700px; 
+    height: auto;
+    border-radius: 0px; 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative;
+    padding: 30px 20px;
+    box-sizing: border-box;
+}
+
+.screen {
+    width: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px; 
+}
+
+/* --- LOGO --- */
+.main-logo {
+    width: 100%; max-width: 420px; height: auto;
+    display: block; margin-bottom: 10px; 
+    filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));
+}
+
+.game-logo-text {
+    font-size: 1.8rem; font-weight: 800;
+    margin: 0 0 10px 0; color: var(--krem);
+    letter-spacing: -0.5px;
+}
+
+/* --- SONUÇ EKRANI GÖRSELİ --- */
+.result-image {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%; 
+    border: 5px solid var(--krem);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* --- INPUTLAR --- */
+.input-wrapper { width: 100%; display: flex; justify-content: center; margin-bottom: 5px; }
+.input-wrapper input {
+    width: 60%; /* Butonlara yakın bir genişlik */
+    padding: 12px;
+    font-size: 1rem; font-weight: 600;
+    border: none; border-radius: 16px;
+    text-align: center; font-family: inherit; outline: none;
+    box-sizing: border-box; background: var(--krem); color: var(--siyah);
+    box-shadow: 0 3px 0 var(--krem-golge);
+}
+
+/* --- BUTONLAR --- */
+.btn-wrapper {
+    width: 100%; display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+}
+
+.iett-btn {
+    background-color: var(--krem); color: var(--siyah);
+    border: none; 
+    width: 70%; /* KISALTILDI: %90 yerine %70 */
+    padding: 14px;
+    font-size: 1.1rem; font-weight: 700;
+    border-radius: 16px; cursor: pointer; 
+    transition: transform 0.1s; font-family: inherit;
+    box-shadow: 0px 4px 0px var(--yari-saydam); 
+}
+.iett-btn:active { transform: translateY(3px); box-shadow: 0px 1px 0px var(--yari-saydam); }
+
+.btn-dev {
+    font-size: 1.2rem !important; text-transform: uppercase;
+    font-weight: 800 !important; padding: 16px !important; 
+    width: 70% !important; /* KISALTILDI */
+}
+
+.share-btn-final {
+    background-color: var(--krem) !important; color: var(--siyah) !important;
+    box-shadow: 0px 4px 0px var(--yari-saydam) !important;
+    width: 70%; /* KISALTILDI */
+    padding: 16px; font-size: 1.1rem; font-weight: 800;
+    border-radius: 16px; border: none; cursor: pointer;
+    text-transform: uppercase; margin-bottom: 5px;
+}
+
+/* --- SORU PENCERESİ --- */
+.top-bar {
+    width: 80%; /* Burayı da biraz daralttık */
+    display: flex; justify-content: space-between;
+    font-weight: 600; font-size: 0.9rem;
+    color: var(--krem); opacity: 0.9; margin-bottom: 5px;
+}
+
+.question-window {
+    background-color: var(--krem); border-radius: 20px; 
+    padding: 25px 20px; 
+    width: 85%; /* Soru penceresi biraz geniş kalabilir, okunurluk için */
+    min-height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 15px; box-shadow: 0px 5px 0px var(--yari-saydam);
+}
+.question-text {
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--siyah); margin: 0; line-height: 1.35; text-align: center;
+}
+.soru-sayac { color: var(--krem); font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; }
+
+/* --- LİDER TABLOSU --- */
+.leaderboard-box {
+    width: 85%; background: var(--krem); border-radius: 18px;
+    padding: 15px; max-height: 320px; overflow-y: auto;
+    color: var(--siyah); box-shadow: 0px 5px 0px var(--yari-saydam);
+}
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 8px; border-bottom: 2px solid #ccc; font-weight: 800; font-size: 0.9rem;}
+td { padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 0.9rem;}
+
+.footer-info {
+    margin-top: 25px; text-align: center; color: var(--krem);
+    opacity: 0.5; font-size: 0.75rem; line-height: 1.4;
+}
+.gizli { display: none !important; }
