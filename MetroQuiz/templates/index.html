@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Metro Quiz</title>
+    
+    <link rel="stylesheet" href="/static/style.css">
+    
+    <link rel="icon" type="image/png" href="/static/tablogo.png">
+    <link rel="apple-touch-icon" href="/static/tablogo.png">
+
+    <style>
+        /* Linklerin rengini ve stilini ayarlayan kısım */
+        .footer-links a {
+            color: var(--krem);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .footer-links a:hover {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="screen-menu" class="screen">
+            <img src="/static/logo.png" alt="Metro Quiz" class="main-logo">
+            
+            <div class="input-wrapper">
+                <input type="text" id="oyuncu-ismi" placeholder="İsim gir bakalım..." maxlength="12">
+            </div>
+            <div class="btn-wrapper" style="margin-top: 15px;">
+                <button class="iett-btn btn-dev" onclick="isimKontrolVeIlerle()">OYUNA BAŞLA</button>
+                <button class="iett-btn" onclick="liderleriGoster()">Liderler Tablosu</button>
+            </div>
+            
+            <div class="footer-info">
+                <p class="footer-links">
+                    <a href="/gizlilik">Gizlilik</a> | 
+                    <a href="/hakkimizda">Hakkımızda</a> | 
+                    <a href="/iletisim">İletişim</a>
+                </p>
+                <p>Metro Quiz v2.4</p>
+                <p>Created by Cargargatagon</p>
+            </div>
+        </div>
+
+        <div id="screen-map-select" class="screen gizli">
+            <h2 class="game-logo-text">Şehir Seç</h2>
+            <div class="btn-wrapper">
+                <button class="iett-btn" onclick="oyunuBaslat('Istanbul')">İstanbul</button>
+                <button class="iett-btn" onclick="oyunuBaslat('Ankara')">Ankara</button>
+                <button class="iett-btn" onclick="oyunuBaslat('Izmir')">İzmir</button>
+                <button class="iett-btn" style="margin-top: 15px; width: 60%; font-size: 0.9rem;" onclick="anaMenuyeDon()">Geri Dön</button>
+            </div>
+        </div>
+
+        <div id="screen-game" class="screen gizli">
+            <div class="top-bar">
+                <span id="kullanici-adi-goster">👤 Misafir</span>
+                <span id="skor-goster">Puan: 0</span>
+            </div>
+            <div class="soru-sayac">Soru: <span id="sayac-text">1</span>/20</div>
+            <div class="question-window">
+                <p id="soru-metni" class="question-text">Soru Yükleniyor...</p>
+            </div>
+            <div id="secenekler" class="btn-wrapper"></div>
+        </div>
+
+        <div id="screen-result" class="screen gizli">
+            <img id="sonuc-resim" src="" class="result-image" style="display:none;"> 
+            
+            <h3 id="sonuc-baslik" style="margin: 0 0 10px 0; font-size: 1.5rem; color: var(--krem); font-weight:800;">Oyun Bitti</h3>
+            
+            <div style="margin-bottom: 25px; font-size: 1.1rem; font-weight: 600;">
+                <div id="sonuc-detay"></div>
+            </div>
+            
+            <div class="btn-wrapper">
+                <button class="share-btn-final" onclick="sonucuPaylas()">SONUCU PAYLAŞ</button>
+                <button class="iett-btn" onclick="anaMenuyeDon()">Ana Menü</button>
+                <button class="iett-btn" onclick="liderleriGoster()">Liderler Tablosu</button>
+            </div>
+        </div>
+
+        <div id="screen-leaderboard" class="screen gizli">
+            <h2 class="game-logo-text">En İyiler</h2>
+            <div class="leaderboard-box">
+                <table id="lider-tablosu"><tr><td>Yükleniyor...</td></tr></table>
+            </div>
+            <div class="btn-wrapper" style="margin-top: 15px;">
+                <button class="iett-btn" style="width: 50%;" onclick="anaMenuyeDon()">Geri Dön</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let sorular = [];
+        let suankiSoruIndex = 0;
+        let dogruSayisi = 0;
+        let dogruAdedi = 0;
+        let oyuncuIsmi = "";
+        let secilenBolge = "Istanbul";
+
+        function ekranGoster(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('gizli'));
+            document.getElementById(id).classList.remove('gizli');
+        }
+
+        function isimKontrolVeIlerle() {
+            oyuncuIsmi = document.getElementById('oyuncu-ismi').value.trim();
+            if(!oyuncuIsmi) { alert("İsim girer misin?"); return; }
+            document.getElementById('kullanici-adi-goster').innerText = "👤 " + oyuncuIsmi;
+            ekranGoster('screen-map-select');
+        }
+
+        function oyunuBaslat(bolge) {
+            if(bolge === 'Ankara' || bolge === 'Izmir') {
+                alert("Pek Yakında...");
+                return;
+            }
+            secilenBolge = bolge;
+            
+            fetch(`/api/sorular?bolge=${bolge}`)
+                .then(r => r.json())
+                .then(d => {
+                    sorular = d;
+                    if(!sorular || sorular.length === 0) { 
+                        alert("Bu şehir için soru bulunamadı! Excel dosyasındaki şehir ismini kontrol et: " + bolge); 
+                        anaMenuyeDon(); 
+                        return; 
+                    }
+                    suankiSoruIndex = 0; dogruSayisi = 0; dogruAdedi = 0;
+                    guncellePuan();
+                    ekranGoster('screen-game');
+                    soruYukle();
+                })
+                .catch(e => alert("Bağlantı hatası!"));
+        }
+
+        function guncellePuan() { document.getElementById('skor-goster').innerText = "Puan: " + dogruSayisi; }
+
+        function soruYukle() {
+            if(suankiSoruIndex >= sorular.length || suankiSoruIndex >= 20) { oyunuBitir(); return; }
+            
+            document.getElementById('sayac-text').innerText = (suankiSoruIndex + 1);
+            const s = sorular[suankiSoruIndex];
+            document.getElementById('soru-metni').innerText = s.soru;
+            
+            const div = document.getElementById('secenekler');
+            div.innerHTML = '';
+            
+            let secenekler = [...s.secenekler].sort(() => Math.random() - 0.5);
+            
+            secenekler.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.className = 'iett-btn';
+                btn.onclick = () => cevapKontrol(opt, s.dogru_cevap);
+                div.appendChild(btn);
+            });
+        }
+
+        function cevapKontrol(secilen, dogru) {
+            if(secilen === dogru) {
+                dogruAdedi++; dogruSayisi += 10; 
+            }
+            suankiSoruIndex++; guncellePuan(); soruYukle();
+        }
+
+        function oyunuBitir() {
+            fetch('/api/skor-kaydet', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({isim: oyuncuIsmi, puan: dogruSayisi, bolge: secilenBolge})
+            }).catch(err => console.log("Skor kaydedilemedi"));
+
+            const detay = document.getElementById('sonuc-detay');
+            const baslik = document.getElementById('sonuc-baslik');
+            const resim = document.getElementById('sonuc-resim');
+            
+            resim.style.display = "block";
+            if(dogruAdedi >= 10) {
+                baslik.innerText = "Bravo Metro Kurdu!";
+                baslik.style.color = "#2ecc71";
+                resim.src = "/static/imammoglu-zafer.png"; 
+            } else {
+                baslik.innerText = "Daha Çok Gezmelisin...";
+                baslik.style.color = "#e74c3c"; 
+                resim.src = "/static/imammoglu-hata.png"; 
+            }
+            detay.innerHTML = `${suankiSoruIndex} Soruda ${dogruAdedi} Doğru<br>Toplam Puan: ${dogruSayisi}`;
+            ekranGoster('screen-result');
+        }
+
+        function sonucuPaylas() { 
+            const mesaj = `Metro Quiz'de ${dogruSayisi} puan yaptım!`;
+            if(navigator.share) {
+                navigator.share({ title: 'Metro Quiz', text: mesaj, url: window.location.href });
+            } else {
+                alert("Sonuç panoya kopyalandı!"); 
+            }
+        }
+        
+        function liderleriGoster() {
+            ekranGoster('screen-leaderboard');
+            const tablo = document.getElementById('lider-tablosu');
+            tablo.innerHTML = '<tr><td>Yükleniyor...</td></tr>';
+            fetch('/api/liderlik').then(r => r.json()).then(data => {
+                if(data.length === 0) { tablo.innerHTML = '<tr><td>Henüz kayıt yok.</td></tr>'; return; }
+                let html = '<tr><th>Sıra</th><th>İsim</th><th>Puan</th></tr>';
+                data.forEach((kisi, index) => {
+                    html += `<tr><td>${index + 1}.</td><td>${kisi.isim}</td><td>${kisi.puan}</td></tr>`;
+                });
+                tablo.innerHTML = html;
+            });
+        }
+        
+        function anaMenuyeDon() { ekranGoster('screen-menu'); }
+    </script>
+</body>
+</html>
