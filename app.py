@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory # send_from_directory eklendi
 import pandas as pd
 import os
 import requests 
@@ -12,9 +12,14 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 EXCEL_FILE = os.path.join(BASE_DIR, 'sorular.xlsx')
 
 # Firebase Veritabanı URL (Skorları buraya kaydeder)
-# 'bus_scores' kısmını 'metro_scores' yaptık.
 FIREBASE_DB_URL = "https://map-9488e-default-rtdb.firebaseio.com/metro_scores.json"
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+
+# --- GOOGLE ADSENSE İZNİ (ADS.TXT) ---
+@app.route('/ads.txt')
+def ads_txt():
+    # static klasörü içindeki ads.txt dosyasını dış dünyaya açar
+    return send_from_directory('static', 'ads.txt')
 
 # --- SAYFA ROTALARI (MENÜLER) ---
 @app.route('/')
@@ -36,7 +41,6 @@ def iletisim():
 # --- API: SORULARI GETİR (ŞEHİR BAZLI) ---
 @app.route('/api/sorular')
 def get_sorular():
-    # Frontend'den gelen şehir bilgisini al (Örn: Istanbul)
     sehir_secimi = request.args.get('bolge', 'Istanbul')
 
     try:
@@ -44,30 +48,22 @@ def get_sorular():
             print(f"HATA: Excel dosyası bulunamadı! Yol: {EXCEL_FILE}")
             return jsonify([])
         
-        # Excel'i oku (Boş hücreleri doldur)
         df = pd.read_excel(EXCEL_FILE, engine='openpyxl').fillna('')
-        df.columns = df.columns.str.strip() # Sütun isimlerindeki boşlukları temizle
+        df.columns = df.columns.str.strip()
         
-        # --- FİLTRELEME MANTIĞI ---
-        # Excel'de 'Sehir' sütunu varsa ona, yoksa 'Bolge' sütununa bak
         hedef_kolon = 'Sehir' if 'Sehir' in df.columns else 'Bolge'
         
         if hedef_kolon in df.columns:
-            # Seçilen şehre göre filtrele (Büyük/küçük harf duyarlılığını kaldırdık)
             df = df[df[hedef_kolon].astype(str).str.lower() == sehir_secimi.lower()]
         
-        # --- SORU SEÇİMİ ---
-        # Eğer havuzda yeterli soru varsa rastgele 20 tane seç
         soru_sayisi = min(20, len(df))
         if soru_sayisi == 0:
-            return jsonify([]) # Hiç soru yoksa boş dön
+            return jsonify([])
             
         final_df = df.sample(n=soru_sayisi).reset_index(drop=True)
         
-        # JSON Formatına Çevir
         quiz_data = []
         for index, row in final_df.iterrows():
-            # Soru veya cevap boşsa atla (Hatalı satırları eler)
             if not str(row['Soru']).strip() or not str(row['Dogru_Cevap']).strip():
                 continue
 
@@ -90,7 +86,7 @@ def get_sorular():
 def skor_kaydet():
     try:
         data = request.json
-        isim = data.get('isim', 'Anonim').strip()[:15] # İsim çok uzunsa kırp
+        isim = data.get('isim', 'Anonim').strip()[:15]
         puan = data.get('puan', 0)
         sehir = data.get('bolge', 'Istanbul') 
         
@@ -104,7 +100,6 @@ def skor_kaydet():
             "tarih": bugun
         }
         
-        # Firebase'e gönder
         requests.post(FIREBASE_DB_URL, json=yeni_skor)
 
         return jsonify({"mesaj": "Kaydedildi!"})
@@ -123,17 +118,14 @@ def liderlik_tablosu():
         veriler = response.json()
         skor_listesi = []
         
-        # Firebase'den gelen veriyi listeye çevir
         if isinstance(veriler, dict):
             for key, value in veriler.items():
                 skor_listesi.append(value)
         elif isinstance(veriler, list):
              skor_listesi = [v for v in veriler if v]
 
-        # Puana göre sırala (En yüksek puan en üstte)
         skor_listesi = sorted(skor_listesi, key=lambda x: x.get('puan', 0), reverse=True)
         
-        # İlk 15 kişiyi gönder
         return jsonify(skor_listesi[:15])
 
     except Exception as e:
