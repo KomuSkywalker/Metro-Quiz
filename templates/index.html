@@ -10,6 +10,9 @@
       gtag('config', 'G-Q98BBCVXGW');
     </script>
 
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+     crossorigin="anonymous"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Metro Quiz</title>
@@ -124,7 +127,6 @@
         }
 
         function oyunuBaslat(bolge) {
-            // ARTIK KISITLAMA YOK! ŞEHİR NEYSE ONU ÇAĞIRIR.
             secilenBolge = bolge;
             
             fetch(`/api/sorular?bolge=${bolge}`)
@@ -132,7 +134,6 @@
                 .then(d => {
                     sorular = d;
                     if(!sorular || sorular.length === 0) { 
-                        // Eğer Excel'de o şehir yoksa uyarı verir
                         alert(`${bolge} için soru bulunamadı! Excel'e '${bolge}' etiketli soru eklersen açılır.`); 
                         anaMenuyeDon(); 
                         return; 
@@ -190,7 +191,6 @@
             if(dogruAdedi >= 10) {
                 baslik.innerText = "Tebrikler Şefim!";
                 baslik.style.color = "#2ecc71";
-                // Ankara eklersen Mansur Yavaş fotosu koyabiliriz ilerde :) Şimdilik standart kalıyor.
                 resim.src = "/static/imammoglu-zafer.png"; 
             } else {
                 baslik.innerText = "Biraz Daha Gezmelisin...";
