@@ -1,33 +1,24 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <link rel="icon" type="image/png" href="/static/tablogo.png">
-    <link rel="apple-touch-icon" href="/static/tablogo.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>İletişim - Metro Quiz</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <div class="app-container">
-        <div class="screen">
-            <h2 class="game-logo-text">İletişim</h2>
-            
-            <div class="leaderboard-box" style="text-align: center; padding: 20px;">
-                <p>Bir hata mı buldun?</p>
-                <p>Veya aklına süper bir soru mu geldi?</p>
-                <br>
-                <p>Bize ulaşmak için:</p>
-                <h3 style="color: #2ecc71;">satafi.software@gmail.com</h3>
-                <br>
-                <p>Sosyal Medya:</p>
-                <p><strong>@cargargatagon</strong></p>
-            </div>
+{% extends "base.html" %}
+{% block title %}İletişim - Metro Quiz{% endblock %}
 
-            <div class="btn-wrapper" style="margin-top: 20px;">
-                <button class="iett-btn" onclick="window.location.href='/'">Ana Menüye Dön</button>
+{% block content %}
+    <div class="screen sayfa">
+        <h2 class="game-logo-text">İletişim</h2>
+
+        <div class="question-window sayfa-metin sayfa-orta">
+            <p><strong>Bize Ulaşın</strong></p>
+            <p>Öneri, hata bildirimi veya reklam işbirlikleri için aşağıdaki adresten mail atabilirsiniz.</p>
+
+            <div class="eposta-kutu">
+                <strong>E-POSTA ADRESİ</strong>
+                <a href="mailto:satafi.software@gmail.com">satafi.software@gmail.com</a>
             </div>
         </div>
+
+        <a href="/" class="iett-btn btn-geri">Ana Menü</a>
+
+        <div class="footer-info">
+            <p class="signature">Created by Satafi Studio</p>
+        </div>
     </div>
-</body>
-</html>
+{% endblock %}

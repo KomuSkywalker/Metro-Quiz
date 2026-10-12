@@ -1,0 +1,6 @@
+.vercel
+.venv
+__pycache__/
+.DS_Store
+# Türkçe karakterli desen macOS'ta eşleşmiyor, o yüzden "ablon"
+*ablon.xlsx
