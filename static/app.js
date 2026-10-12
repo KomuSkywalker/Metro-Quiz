@@ -128,12 +128,23 @@ function anaMenuyeDon() {
 }
 
 // --- OYUN ---
+// Oyuncu soruyu düşünürken boşta kalan bağlantıyı sunucu kapatabiliyor; Safari bunu
+// "Load failed" olarak bildiriyor. İstek sunucuya ulaşmadığı için yeniden denemek güvenli.
 async function api(yol, govde) {
-    const r = await fetch(yol, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(govde)
-    });
+    let r;
+    for (let deneme = 0; ; deneme++) {
+        try {
+            r = await fetch(yol, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(govde)
+            });
+            break;
+        } catch (e) {
+            if (deneme >= 2) throw new Error("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+            await new Promise(c => setTimeout(c, 300 * (deneme + 1)));
+        }
+    }
     const veri = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(veri.hata || "Bağlantı hatası!");
     return veri;
