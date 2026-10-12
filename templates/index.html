@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <audio id="bg-music" loop preload="none">
+        <source src="/static/muzik.mp3" type="audio/mpeg">
+    </audio>
+
+    <button id="ses-btn" class="ses-btn" type="button" aria-label="Sesi kapat">🔊</button>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <div id="screen-menu" class="screen">
@@ -106,5 +111,5 @@
     <script>
         const AYAR = { soruSuresi: {{ soru_suresi }}, gecisSuresi: 1600 };
     </script>
-    <script src="/static/app.js?v=4"></script>
+    <script src="/static/app.js?v=5"></script>
 {% endblock %}

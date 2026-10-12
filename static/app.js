@@ -22,6 +22,9 @@ let sonSonuc = null;
 let kilit = false;
 let sureSayaci = null;
 let liderlikDonemi = 'hafta';
+let sesAcik = depo.al('ses', true);
+
+const bgMusic = $("bg-music");
 
 const SEHIR_ADLARI = {Istanbul: 'İstanbul', Izmir: 'İzmir', Ankara: 'Ankara'};
 
@@ -42,6 +45,34 @@ function toast(mesaj) {
     toastZamanlayici = setTimeout(() => t.classList.remove('gorunur'), 2800);
 }
 
+// --- SES ---
+function muzigiBaslat() {
+    if (!sesAcik) return;
+    bgMusic.currentTime = 0;
+    bgMusic.volume = 0.3;
+    bgMusic.play().catch(() => console.log("Otomatik oynatma engellendi."));
+}
+
+function muzigiDurdur() {
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+}
+
+function sesDugmesiniGuncelle() {
+    const btn = $('ses-btn');
+    btn.textContent = sesAcik ? '🔊' : '🔇';
+    btn.setAttribute('aria-label', sesAcik ? 'Sesi kapat' : 'Sesi aç');
+}
+
+function sesiDegistir() {
+    sesAcik = !sesAcik;
+    depo.yaz('ses', sesAcik);
+    sesDugmesiniGuncelle();
+    const oyunda = !$('screen-game').classList.contains('gizli');
+    if (sesAcik && oyunda) muzigiBaslat();
+    if (!sesAcik) muzigiDurdur();
+}
+
 // --- MENÜ ---
 function isimKontrolVeIlerle(e) {
     e.preventDefault();
@@ -54,6 +85,7 @@ function isimKontrolVeIlerle(e) {
 
 function anaMenuyeDon() {
     sureyiDurdur();
+    muzigiDurdur();
     ekranGoster('screen-menu');
 }
 
@@ -73,6 +105,7 @@ async function oyunuBaslat(bolge) {
     if (kilit) return;
     kilit = true;
     secilenBolge = bolge;
+    muzigiBaslat();
     try {
         const d = await api('/api/basla', {
             isim: oyuncuIsmi, bolge: bolge, gorulen: depo.al('gorulen', [])
@@ -197,6 +230,7 @@ async function cevapGonder(secilen) {
 }
 
 function oyunuBitir(sonuc) {
+    muzigiDurdur();
     kilit = false;
     sonSonuc = sonuc;
 
@@ -244,6 +278,7 @@ async function liderleriGoster(donem) {
         s.setAttribute('aria-selected', aktif);
     });
     sureyiDurdur();
+    muzigiDurdur();
     ekranGoster('screen-leaderboard');
     tabloMesaji("Yükleniyor...");
 
@@ -289,6 +324,7 @@ async function liderleriGoster(donem) {
 
 // --- OLAYLAR ---
 $('isim-formu').addEventListener('submit', isimKontrolVeIlerle);
+$('ses-btn').addEventListener('click', sesiDegistir);
 $('paylas-btn').addEventListener('click', sonucuPaylas);
 $('tekrar-btn').addEventListener('click', () => oyunuBaslat(secilenBolge));
 document.querySelectorAll('[data-bolge]').forEach(b =>
@@ -300,3 +336,4 @@ document.querySelectorAll('.sekme').forEach(s =>
     s.addEventListener('click', () => liderleriGoster(s.dataset.donem)));
 
 $('oyuncu-ismi').value = depo.al('isim', '');
+sesDugmesiniGuncelle();
