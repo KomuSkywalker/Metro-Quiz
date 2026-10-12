@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <audio id="bg-music" loop preload="none">
-        <source src="/static/muzik.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bg-music" loop preload="none"></audio>
 
     <button id="ses-btn" class="ses-btn" type="button" aria-label="Sesi kapat">🔊</button>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -109,7 +107,7 @@
 
 {% block scripts %}
     <script>
-        const AYAR = { soruSuresi: {{ soru_suresi }}, gecisSuresi: 1600 };
+        const AYAR = { soruSuresi: {{ soru_suresi }}, gecisSuresi: 1600, muzik: '/static/muzik.mp3?v=1' };
     </script>
-    <script src="/static/app.js?v=5"></script>
+    <script src="/static/app.js?v=6"></script>
 {% endblock %}

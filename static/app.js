@@ -46,17 +46,55 @@ function toast(mesaj) {
 }
 
 // --- SES ---
-function muzigiBaslat() {
-    if (!sesAcik) return;
-    bgMusic.currentTime = 0;
+// Müzik doğrudan <audio> ile akıtılınca Safari bağlantıyı koparıyor, oyun istekleri
+// "Load failed" ile düşüyor ve şarkı bitince başa dönmüyordu. O yüzden dosya bir kez
+// indirilip bellekten çalınır.
+let muzikYukleniyor = false;
+let muzikHazir = false;
+let muzikIsteniyor = false;   // oyun ekranındayız, müzik çalmalı
+
+async function muzigiYukle() {
+    if (muzikYukleniyor || muzikHazir) return;
+    muzikYukleniyor = true;
+    try {
+        const r = await fetch(AYAR.muzik);
+        if (!r.ok) throw new Error();
+        bgMusic.src = URL.createObjectURL(await r.blob());
+        muzikHazir = true;
+        muzigiSurdur();
+    } catch (e) {
+        console.log("Müzik yüklenemedi.");
+    }
+    muzikYukleniyor = false;
+}
+
+// Çalması gerekiyorsa ve çalmıyorsa başlatır. Tarayıcı dokunuş dışında başlatmayı
+// engellerse sonraki dokunuşta (şık seçimi) yeniden denenir.
+function muzigiSurdur() {
+    if (!muzikIsteniyor || !sesAcik) return;
+    if (!muzikHazir) { muzigiYukle(); return; }
+    if (!bgMusic.paused) return;
     bgMusic.volume = 0.3;
     bgMusic.play().catch(() => console.log("Otomatik oynatma engellendi."));
 }
 
-function muzigiDurdur() {
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
+function muzigiBaslat() {
+    muzikIsteniyor = true;
+    if (muzikHazir) bgMusic.currentTime = 0;
+    muzigiSurdur();
 }
+
+function muzigiDurdur() {
+    muzikIsteniyor = false;
+    bgMusic.pause();
+    if (muzikHazir) bgMusic.currentTime = 0;
+}
+
+// "loop" bazı tarayıcılarda şarkı sonunda takılabiliyor; bitince elle başa sar
+bgMusic.addEventListener('ended', () => {
+    bgMusic.currentTime = 0;
+    muzigiSurdur();
+});
 
 function sesDugmesiniGuncelle() {
     const btn = $('ses-btn');
@@ -68,9 +106,8 @@ function sesiDegistir() {
     sesAcik = !sesAcik;
     depo.yaz('ses', sesAcik);
     sesDugmesiniGuncelle();
-    const oyunda = !$('screen-game').classList.contains('gizli');
-    if (sesAcik && oyunda) muzigiBaslat();
-    if (!sesAcik) muzigiDurdur();
+    if (sesAcik) muzigiSurdur();
+    else bgMusic.pause();
 }
 
 // --- MENÜ ---
@@ -80,6 +117,7 @@ function isimKontrolVeIlerle(e) {
     $('isim-hata').classList.toggle('gizli', !!oyuncuIsmi);
     if (!oyuncuIsmi) { $('oyuncu-ismi').focus(); return; }
     depo.yaz('isim', oyuncuIsmi);
+    if (sesAcik) muzigiYukle();   // şehir seçilene kadar hazır olsun
     ekranGoster('screen-map-select');
 }
 
@@ -186,6 +224,7 @@ async function cevapGonder(secilen) {
     if (kilit) return;
     kilit = true;
     sureyiDurdur();
+    muzigiSurdur();
 
     const butonlar = [...document.querySelectorAll('#secenekler .secenek')];
     butonlar.forEach(b => {

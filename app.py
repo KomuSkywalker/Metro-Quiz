@@ -49,6 +49,7 @@ if not SECRET_KEY:
         SECRET_KEY = hashlib.sha256(f.read() + BASE_DIR.encode()).hexdigest()
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600   # görsel, ses ve betikler tarayıcıda 1 saat saklanır
 
 
 # --- GOOGLE ADSENSE İZNİ (ADS.TXT) ---
